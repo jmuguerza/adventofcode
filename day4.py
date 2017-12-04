@@ -27,7 +27,7 @@ def check_anagram(passphrase):
     if not passphrase:
         return False
     anagrams = [
-            tuple(sorted(map(''.join, itertools.permutations(word))))
+            tuple(sorted(word))
             for word in passphrase.split()
     ]
     if len(anagrams) != len(set(anagrams)):
