@@ -1,16 +1,18 @@
 #/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-# PART 1
-# We have to repair the corruption in a spreadsheet. The spreadsheet
-# consists of rows of apparently-random number. To make sure the
-# recovery is possible, we need to calculate the CHECKSUM. For each
-# row, determine the difference between the largest number and the 
-# smallest value; the checksum is the sum of all these differences.
+"""
+ PART 1
+ We have to repair the corruption in a spreadsheet. The spreadsheet
+ consists of rows of apparently-random number. To make sure the
+ recovery is possible, we need to calculate the CHECKSUM. For each
+ row, determine the difference between the largest number and the 
+ smallest value; the checksum is the sum of all these differences.
 
-# PART 2
-# The goal now is to find the only two numbers in each row where one 
-# evenly divides the other. The checksum of each line is said division.
+ PART 2
+ The goal now is to find the only two numbers in each row where one 
+ evenly divides the other. The checksum of each line is said division.
+"""
 
 INPUT = '''5048	177	5280	5058	4504	3805	5735	220	4362	1809	1521	230	772	1088	178	1794
 6629	3839	258	4473	5961	6539	6870	4140	4638	387	7464	229	4173	5706	185	271
@@ -33,10 +35,12 @@ import itertools
 
 
 def iterate_input(input):
+    """ Iterate every line of input """
     for line in input.split('\n'):
         yield(list(map(int, line.rstrip().split('\t'))))
 
 def get_row_division(row):
+    """ Get the only possible division by two elements of a row """
     for a, b in itertools.combinations(row, 2):
         if a % b == 0:
             return int(a/b)
@@ -44,10 +48,12 @@ def get_row_division(row):
             return int(b/a)
 
 def get_row_diff(row):
+    """ Get the difference between the max and the min of a row """
     min, max = sorted(row)[::len(row)-1]
     return max - min
 
 def get_checksum(spreadsheet, row_check_func):
+    """ Get the spreadsheet checksum """
     return sum((row_check_func(row) for row in spreadsheet))
 
 def test(truth, row_check_func):

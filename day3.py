@@ -1,12 +1,14 @@
 #/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-# PART 1
-# A new kind of memory is used to store info in an infinite
-# two dimentional grid. Each square of the grid is allocated
-# in an spiral pattern starting at a location marked 1, and
-# then counting up while spiraling outward. Data is carried
-# always from the square 1, using the minimum distance.
+"""
+ PART 1
+ A new kind of memory is used to store info in an infinite
+ two dimentional grid. Each square of the grid is allocated
+ in an spiral pattern starting at a location marked 1, and
+ then counting up while spiraling outward. Data is carried
+ always from the square 1, using the minimum distance.
+"""
 
 INPUT = 312051
 
