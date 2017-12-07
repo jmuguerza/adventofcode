@@ -37,7 +37,6 @@ def count_distance(memory):
     seen = { tuple(memory): 0 }
     for step in itertools.count():
         if tuple(redistribute(memory)) in seen:
-            print(step, seen[tuple(memory)])
             return step - seen[tuple(memory)]
         seen[tuple(memory)] = step
 
