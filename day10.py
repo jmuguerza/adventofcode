@@ -11,7 +11,7 @@
    CURRENT POSITION
  - MOVE the CURRENT POSITION forward by LENGTH plus the SKIP SIZE.
  - INCREASE SKIP SIZE by 1.
- The list is circular. LENGHTS larger than the size of the list are invalid.
+ The list is circular. LENGTHS larger than the size of the list are invalid.
  Return the first two elements multiplied.
  PART 2
  Now the input is a string, and add 17, 31, 73, 47, 23. Run 64 rounds. Use the
@@ -30,11 +30,11 @@ INPUT = (
 from functools import reduce
 
 def parse_as_int(input):
-    """ Parse the lenghts as a list of ints """
+    """ Parse the lengths as a list of ints """
     return list(map(int, input.split(',')))
 
 def parse_as_str(input):
-    """ Parse the lenghts as a list of ints """
+    """ Parse the lengths as a list of ints """
     return list(map(ord, input.strip())) + [17, 31, 73, 47, 23]
 
 def calculate_hash(lst, lengths, cp=0, ss=0):
