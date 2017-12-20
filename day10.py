@@ -29,13 +29,14 @@ INPUT = (
 
 from functools import reduce
 
-def parse_as_int(input):
+def iterate_as_int(input):
     """ Parse the lengths as a list of ints """
-    return list(map(int, input.split(',')))
+    yield from map(int, input.split(','))
 
-def parse_as_str(input):
+def iterate_as_str(input):
     """ Parse the lengths as a list of ints """
-    return list(map(ord, input.strip())) + [17, 31, 73, 47, 23]
+    yield from map(ord, input.strip())
+    yield from (17, 31, 73, 47, 23)
 
 def calculate_hash(lst, lengths, cp=0, ss=0):
     """ Calculate the hash of the list """
@@ -48,46 +49,47 @@ def calculate_hash(lst, lengths, cp=0, ss=0):
         ss += 1
     return lst, cp, ss
 
-def get_hash(lengths, parser):
+def get_hash(lengths, iterator=iterate_as_str):
     """ Get the Know Hash """
-    lengths = parser(lengths)
     sparse_hash = list(range(256))
     cp = ss = 0
     # Iterate 64 times the hash, keeping current_position and skip_step
     for i in range(64):
-        sparse_hash, cp, ss = calculate_hash(sparse_hash, lengths, cp, ss)
+        sparse_hash, cp, ss = calculate_hash(sparse_hash, iterator(lengths), cp, ss)
     # Get the dense hash
     dense_hash = ( reduce(int.__xor__, block) 
             for block in zip(*[iter(sparse_hash)]*16))
     return ''.join(('{:02x}'.format(block) for block in dense_hash))
 
-def hash_and_get_product(orig_list, lengths, parser):
+def hash_and_get_product(input, iterator):
     """ Hash the list, and return the product of fisrt two elements """
-    hash_list, _, _ = calculate_hash(list(orig_list), parser(lengths))
+    orig_list, lengths = input
+    hash_list, _, _ = calculate_hash(list(orig_list), iterator(lengths))
     return hash_list[0] * hash_list[1]
 
 def test(truth, check_function, *args):
     for test_input, result in truth:
         try:
-            assert(check_function(*test_input, *args) == result)
+            my_result = check_function(test_input, *args)
+            assert(my_result == result)
         except AssertionError:
-            print("Error trying to assert {}({}) == {}".format(
-                    check_function.__name__, test_input, result))
+            print("Error trying to assert {}({}) == {} != {}".format(
+                    check_function.__name__, test_input, my_result, result))
 
 if __name__ == "__main__":
     # Test for PART 1
     GROUND_TRUTH = (
             (((0, 1, 2, 3, 4), '3,4,1,5'), 12),
     )
-    test(GROUND_TRUTH, hash_and_get_product, parse_as_int)
+    test(GROUND_TRUTH, hash_and_get_product, iterate_as_int)
     # Test for PART 2
     GROUND_TRUTH = (
-            (('',), 'a2582a3a0e66e6e86e3812dcb672a272'),
-            (('AoC 2017',), '33efeb34ea91902bb2f59c9920caa6cd'),
-            (('1,2,3',), '3efbe78a8d82f29979031a4aa0b16a9d'),
-            (('1,2,4',), '63960835bcdc130f0b66d7ff4f6a5a8e'),
+            ('', 'a2582a3a0e66e6e86e3812dcb672a272'),
+            ('AoC 2017', '33efeb34ea91902bb2f59c9920caa6cd'),
+            ('1,2,3', '3efbe78a8d82f29979031a4aa0b16a9d'),
+            ('1,2,4', '63960835bcdc130f0b66d7ff4f6a5a8e'),
     )
-    test(GROUND_TRUTH, get_hash, parse_as_str)
+    test(GROUND_TRUTH, get_hash, iterate_as_str)
     # RUN
-    print('PART 1 result: {}'.format(hash_and_get_product(*INPUT, parse_as_int)))
-    print('PART 2 result: {}'.format(get_hash(INPUT[1], parse_as_str)))
+    print('PART 1 result: {}'.format(hash_and_get_product(INPUT, iterate_as_int)))
+    print('PART 2 result: {}'.format(get_hash(INPUT[1], iterate_as_str)))
