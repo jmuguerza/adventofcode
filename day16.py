@@ -15,36 +15,48 @@ from collections import deque
 
 PROGRAMS = 'abcdefghijklmnop'
 
-def spin(programs, inst):
-    """ Spin the list of programs """
-    rotated = deque(programs)
-    rotated.rotate(int(inst))
-    return ''.join(rotated)
+class Programs(object):
+    def __init__(self, programs):
+        self._programs = list(programs)
+        self._insts = { 
+                's': self._spin,
+                'x': self._exchange,
+                'p': self._partner
+        }
 
-def exchange(programs, inst):
-    """ Exchange two indices """
-    a, b = map(int, inst.split('/'))
-    return ''.join([ 
-        programs[a] if i == b else
-        programs[b] if i == a else
-        programs[i] for i in range(len(programs))])
+    def exec(self, inst):
+        """ Execute one instruction """
+        self._insts[inst[0]](inst[1:])
 
-def partner(programs, inst):
-    """ Exchange two programs """
-    a, b = inst.split('/')
-    return exchange(programs, "{}/{}".format(
-        programs.index(a), programs.index(b)))
+    def _spin(self, inst):
+        """ Spin the list of programs """
+        n = int(inst)
+        self._programs = (self._programs*2)[len(self._programs) - n:2*len(self._programs) - n]
+
+    def _exchange(self, inst):
+        """ Exchange two indices """
+        a, b = map(int, inst.split('/'))
+        self._programs[a], self._programs[b] = self._programs[b], self._programs[a]
+
+    def _partner(self, inst):
+        """ Exchange two programs """
+        a, b = inst.split('/')
+        self._exchange("{}/{}".format(self._programs.index(a), self._programs.index(b)))
+
+    def __str__(self):
+        return ''.join(self._programs)
 
 def get_final_position(moves, programs, n_times=1):
     """ Dance and get final position """
+    p = Programs(programs)
+    moves = moves.split(',') if isinstance(moves, str) else moves
     for n in range(n_times):
-        for move in moves.split(','):
-            programs = ( 
-                    spin(programs, move[1:]) if move[0] == 's' else
-                    exchange(programs, move[1:]) if move[0] == 'x' else
-                    partner(programs, move[1:]) if move[0] == 'p' else
-                    programs)
-    return programs
+        # Check if we ever go back to first state
+        if n and str(p) == programs:
+            return get_final_position(moves, programs, n_times%n)
+        for move in moves:
+            p.exec(move)
+    return str(p)
 
 def load_and_run(filename, func, **args):
     """ Load instructions and run function """
