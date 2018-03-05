@@ -78,6 +78,57 @@ def get_final_value_h(lines):
     processor.run()
     return processor.reg['h']
 
+def get_final_value_h_optimized():
+    """ OPTIMIZED BY HAND """
+    h = 0
+    b = 65
+    c = b
+    b *= 100
+    b -= -100000
+    c = b
+    c -= -17000
+    while True:
+        f = 1
+        d = 2
+        while True:
+            e = 2
+#            while True:
+#                g = d
+#                g *= e
+#                g -= b
+#                if g == 0:
+#                    f = 0
+#                e -= -1
+#                g = e
+#                g -= b
+#                if g == 0:
+#                    break
+            # Equivalent to:
+            # In this block, the only variable that changes is e (incremented by 1)
+            # at each iteration, and the break condition is that e == b, then e
+            # will always equal b at some point (b is a large integer, and e always
+            # starts at 2). Then, it remains to reduce when is f set to 0. It is set
+            # to 0 when e*d == b. But then, since e can be any integer, except 1 (starts
+            # at 2), then b must be divisible by d. Not only that, since d changes value
+            # out of the loop, and b too, we must ensure that b is greater than e*b on
+            # the first iteration (with e = 2).
+            if (b % d) == 0 and b >= (e*d):
+                f = 0
+
+            d -= -1
+            g = d
+            g -= b
+            if g == 0:
+                break
+        if f == 0:
+            h -= -1
+        g = b
+        g -= c
+        if g == 0:
+            return h
+        b -= -17
+
+
 def load_and_run(filename, func, *args):
     """ Load the file and run the function """
     with open(filename) as f:
@@ -96,4 +147,4 @@ def test(truth, check_function, *args):
 if __name__ == "__main__":
     # RUN
     #print('PART 1 result: {}'.format(load_and_run('day23.txt', get_number_mul)))
-    print('PART 2 result: {}'.format(load_and_run('day23.txt', get_final_value_h)))
+    print('PART 2 result: {}'.format(get_final_value_h_optimized()))
