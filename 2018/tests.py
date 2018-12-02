@@ -25,7 +25,7 @@ class TestPuzzle(ABC):
             print("Testing Puzzle {} with input '{}'".format(
                 self.DAY, test_case['input'].encode('unicode-escape').decode()))
             # Instantiate a class
-            puzzle = self.test_class(input_file=test_case['input'])
+            puzzle = self.test_class(test_case['input'])
             # Run puzzle
             results = puzzle.run(part_one='result_part_one' in test_case,
                     part_two='result_part_two' in test_case)
@@ -65,6 +65,20 @@ class TestPuzzle1(TestPuzzle):
         self.add_test_case('+3\n+3\n+4\n-2\n-4', result_part_two=10)
         self.add_test_case('-6\n+3\n+8\n+5\n-6', result_part_two=5)
         self.add_test_case('+7\n+7\n-2\n-7\n-4', result_part_two=14)
+
+class TestPuzzle2(TestPuzzle):
+    DAY = 2
+
+    def load_test_cases(self):
+        test_input = (
+                "abcdef", "bababc", "abbcde", "abcccd",
+                "aabcdd", "abcdee", "ababab")
+        self.add_test_case('\n'.join(test_input), result_part_one=12)
+        test_input = (
+                "abcde", "fghij", "klmno", "pqrst", "fguij",
+                "axcye", "wvxyz")
+        self.add_test_case('\n'.join(test_input), result_part_two='fgij')
+
 
 def get_parser():
     """ Construct a parser """

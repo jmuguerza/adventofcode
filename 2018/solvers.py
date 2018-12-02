@@ -23,8 +23,8 @@ def open_file_or_string(string):
 
 
 class Puzzle(ABC):
-    def __init__(self, *args, **kwargs):
-        pass
+    def __init__(self, input=None, *args, **kwargs):
+        self.input = input
 
     def run(self, part_one=True, part_two=True, *args, **kwargs):
         self.parse_input()
@@ -42,7 +42,7 @@ class Puzzle(ABC):
                 str(cls.DAY),
                 help="Execute day {} puzzle".format(cls.DAY))
         parser.add_argument(
-                'input_file', type=str,
+                'input', type=str,
                 help="Input string or path to file containing input"
         )
 
@@ -55,11 +55,8 @@ class Puzzle(ABC):
 class Puzzle1(Puzzle):
     DAY = 1
 
-    def __init__(self, *args, **kwargs):
-        self.input_file = kwargs['input_file']
-
     def parse_input(self):
-        with open_file_or_string(self.input_file) as f:
+        with open_file_or_string(self.input) as f:
             self.changes = list(map(int, f.readlines()))
 
     def part_one(self):
@@ -80,6 +77,42 @@ class Puzzle1(Puzzle):
                     break
                 reached.add(total)
         return total
+
+class Puzzle2(Puzzle):
+    DAY = 2
+
+    def parse_input(self):
+        with open_file_or_string(self.input) as f:
+            self.words = list(map(str.strip, f.readlines()))
+
+    def part_one(self):
+        """ First part of the puzzle: count the number of words that contain
+        exactly 2 and 3 of the same character, and return the product"""
+        words_with_two = 0
+        words_with_three = 0
+        for word in self.words:
+            letters = self.get_occurrences(word)
+            words_with_two += 1 if 2 in letters.values() else 0
+            words_with_three += 1 if 3 in letters.values() else 0
+        return words_with_two * words_with_three
+
+    def get_occurrences(self, word):
+        """ Get the occurences per letter """
+        return {
+                letter: word.count(letter) for letter in set(word)
+        }
+
+    def part_two(self):
+        """ Get the two words that only differ in one character """
+        # NOTE: consider that all words have the same length
+        # Remove the i-th character of all words, check if two are the same
+        for i in range(len(self.words[0])):
+            cut_words = set()
+            for word in self.words:
+                cut_word = word[0:i] + word[i+1:]
+                if cut_word in cut_words:
+                    return cut_word
+                cut_words.add(cut_word)
 
 
 def get_puzzle_classes():
