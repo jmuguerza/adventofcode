@@ -1,40 +1,71 @@
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
+
 """Solutions to the AdventOfCode2018 by Joaquin Muguerza
 """
 
 import re
 import argparse
+import contextlib
+from io import StringIO
+from pathlib import Path
 from abc import ABC, abstractmethod
 
 
-class Puzzle(ABC):
+@contextlib.contextmanager
+def open_file_or_string(string):
+    if Path(string).is_file():
+        f = open(string, 'r')
+        yield f
+        f.close()
+    else:
+        yield StringIO(string)
 
+
+class Puzzle(ABC):
     def __init__(self, *args, **kwargs):
         pass
 
+    def run(self, part_one=True, part_two=True, *args, **kwargs):
+        self.parse_input()
+        result_part_one = self.part_one() if part_one else None
+        result_part_two = self.part_two() if part_two else None
+        return (result_part_one, result_part_two)
+
     @abstractmethod
-    def run(self, *args, **kwargs):
+    def parse_input(self):
         ...
 
-    @staticmethod
-    def add_subparser(subparsers):
-        pass
+    @classmethod
+    def add_subparser(cls, subparsers):
+        parser = subparsers.add_parser(
+                str(cls.DAY),
+                help="Execute day {} puzzle".format(cls.DAY))
+        parser.add_argument(
+                'input_file', type=str,
+                help="Input string or path to file containing input"
+        )
+
+    @property
+    @abstractmethod
+    def DAY(self):
+        raise NotImplementedError
 
 
 class Puzzle1(Puzzle):
+    DAY = 1
 
     def __init__(self, *args, **kwargs):
         self.input_file = kwargs['input_file']
 
-    def run(self, *args, **kwargs):
-        with self.input_file as f:
+    def parse_input(self):
+        with open_file_or_string(self.input_file) as f:
             self.changes = list(map(int, f.readlines()))
-        self.part_one()
-        self.part_two()
 
     def part_one(self):
         """ First part of the puzzle: return the sum of all numbers in file """
         total = sum(self.changes)
-        print("Part one:{}".format(total))
+        return total
 
     def part_two(self):
         """ Get the first number reached twice """
@@ -48,21 +79,14 @@ class Puzzle1(Puzzle):
                     twice_found = True
                     break
                 reached.add(total)
-        print("Part two:{}".format(total))
+        return total
 
-    @staticmethod
-    def add_subparser(subparsers):
-        parser = subparsers.add_parser('1', help="Execute day 1 puzzle")
-        parser.add_argument(
-                'input_file', type=argparse.FileType('r'),
-                help="File containing the puzzle input"
-        )
 
 def get_puzzle_classes():
     """ Return an iterator of all Puzzle classes """
     return (
             cls for class_name, cls in globals().items()
-            if re.match('Puzzle[0-9]+', class_name)
+            if re.match('^Puzzle[0-9]+$', class_name)
     )
 
 def get_puzzle_class(puzzle_number):
@@ -74,6 +98,7 @@ def get_parser():
     parser = argparse.ArgumentParser(
             description=__doc__,
             formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+
     subparsers = parser.add_subparsers(
             title='Puzzles',
             dest='puzzle_number',
@@ -91,4 +116,6 @@ def get_parser():
 if __name__ == '__main__':
     args = get_parser().parse_args()
     puzzle = get_puzzle_class(args.puzzle_number)(**vars(args))
-    puzzle.run()
+    results = puzzle.run()
+    print("Part one: {}".format(results[0]))
+    print("Part two: {}".format(results[1]))
