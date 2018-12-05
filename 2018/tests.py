@@ -79,6 +79,15 @@ class TestPuzzle2(TestPuzzle):
                 "axcye", "wvxyz")
         self.add_test_case('\n'.join(test_input), result_part_two='fgij')
 
+class TestPuzzle3(TestPuzzle):
+    DAY = 3
+
+    def load_test_cases(self):
+        test_input = (
+                "#1 @ 1,3: 4x4", "#2 @ 3,1: 4x4", "#3 @ 5,5: 2x2")
+        self.add_test_case('\n'.join(test_input),
+                result_part_one=4, result_part_two=3)
+
 
 def get_parser():
     """ Construct a parser """

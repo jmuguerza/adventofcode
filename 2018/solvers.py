@@ -10,7 +10,8 @@ import contextlib
 from io import StringIO
 from pathlib import Path
 from abc import ABC, abstractmethod
-
+from functools import reduce
+from collections import defaultdict
 
 @contextlib.contextmanager
 def open_file_or_string(string):
@@ -113,6 +114,43 @@ class Puzzle2(Puzzle):
                 if cut_word in cut_words:
                     return cut_word
                 cut_words.add(cut_word)
+
+
+class Puzzle3(Puzzle):
+    DAY = 3
+
+    def parse_input(self):
+        with open_file_or_string(self.input) as f:
+            self.requests = {}
+            REQUEST = re.compile(r'#(?P<id>\d+) @ (?P<x>\d+),(?P<y>\d+): (?P<length>\d+)x(?P<height>\d+)')
+            for line in f.readlines():
+                match = REQUEST.match(line)
+                if not match:
+                    continue
+                request = { key: int(val) for key, val in match.groupdict().items() }
+                self.requests[request['id']] = request
+
+    def part_one(self):
+        """ Find the sq inches claimed by more than one party """
+        self.claims = defaultdict(set)
+        for request in self.requests.values():
+            self.claim(request, self.claims)
+        return len(list(pos for pos, claim in self.claims.items() if len(claim) > 1))
+
+    def claim(self, request, claims):
+        """ Update claims with request """
+        for x in range(request['x'], request['x'] + request['length']):
+            for y in range(request['y'], request['y'] + request['height']):
+                claims[(x,y)].add(request['id'])
+
+    def part_two(self):
+        """ Get the one claim that does not overlap """
+        # get all overlapping claims
+        overlapping_ids = reduce(
+                set.union,
+                ( claims for claims in self.claims.values() if len(claims) > 1 ),
+                set())
+        return next(( id for id in self.requests if id not in overlapping_ids ))
 
 
 def get_puzzle_classes():
