@@ -88,6 +88,14 @@ class TestPuzzle3(TestPuzzle):
         self.add_test_case('\n'.join(test_input),
                 result_part_one=4, result_part_two=3)
 
+class TestPuzzle4(TestPuzzle):
+    DAY = 4
+
+    def load_test_cases(self):
+        self.add_test_case('input_day4_test.txt',
+                result_part_one=240, result_part_two=4455)
+
+
 
 def get_parser():
     """ Construct a parser """

@@ -11,7 +11,9 @@ from io import StringIO
 from pathlib import Path
 from abc import ABC, abstractmethod
 from functools import reduce
-from collections import defaultdict
+from datetime import datetime
+from operator import itemgetter
+from collections import defaultdict, Counter
 
 @contextlib.contextmanager
 def open_file_or_string(string):
@@ -125,9 +127,10 @@ class Puzzle3(Puzzle):
             REQUEST = re.compile(r'#(?P<id>\d+) @ (?P<x>\d+),(?P<y>\d+): (?P<length>\d+)x(?P<height>\d+)')
             for line in f.readlines():
                 match = REQUEST.match(line)
-                if not match:
+                try:
+                    request = { key: int(val) for key, val in match.groupdict().items() }
+                except (AttributeError, KeyError):
                     continue
-                request = { key: int(val) for key, val in match.groupdict().items() }
                 self.requests[request['id']] = request
 
     def part_one(self):
@@ -151,6 +154,86 @@ class Puzzle3(Puzzle):
                 ( claims for claims in self.claims.values() if len(claims) > 1 ),
                 set())
         return next(( id for id in self.requests if id not in overlapping_ids ))
+
+
+class Puzzle4(Puzzle):
+    DAY = 4
+
+    FALLS_ASLEEP = -1
+    WAKES_UP = -2
+    # SHIFT_STARTS = ID
+
+    def parse_input(self):
+        with open_file_or_string(self.input) as f:
+            self.logs = []
+            LOG_ENTRY = re.compile(r'\[(?P<year>\d+)-(?P<month>\d+)-(?P<day>\d+) (?P<hour>\d+):(?P<minute>\d+)\] (?P<action>.+)')
+            ACTION_SHIFT_STARTS = re.compile(r'Guard #(?P<id>\d+) begins shift')
+            ACTION_FALLS_ASLEEP = re.compile(r'falls asleep')
+            ACTION_WAKES_UP = re.compile(r'wakes up')
+            for line in f.readlines():
+                try:
+                    match = LOG_ENTRY.match(line).groupdict()
+                except AttributeError:
+                    continue
+                # get the action
+                action_shift_starts = ACTION_SHIFT_STARTS.match(match['action'])
+                action_falls_asleep = ACTION_FALLS_ASLEEP.match(match['action'])
+                action_wakes_up = ACTION_WAKES_UP.match(match['action'])
+                try:
+                    action = ( self.FALLS_ASLEEP if action_falls_asleep else
+                            self.WAKES_UP if action_wakes_up else
+                            int(action_shift_starts.groupdict()['id']))
+                except AttributeError:
+                    continue
+                date = datetime(
+                        int(match['year']),
+                        int(match['month']),
+                        int(match['day']),
+                        int(match['hour']),
+                        int(match['minute']))
+                self.logs.append({ 'date' : date, 'action' : action})
+        self.logs.sort(key=itemgetter('date'))
+
+    def part_one(self):
+        """ Get the ID and most probable minute a guard is asleep """
+        # get the times each guard is asleep
+        sleep_schedule = self.get_sleep_schedule(self.logs)
+        # get the guard ID that sleeps the most
+        guard_id = Counter(
+                reduce(list.__add__, sleep_schedule.values(), [])).most_common()[0][0]
+        # get the minute where the guard sleeps the most
+        minute = max(sleep_schedule, key=lambda x: sleep_schedule[x].count(guard_id))
+        return minute * guard_id
+
+
+    def get_sleep_schedule(self, logs):
+        """ get all the times guards are asleep """
+        # Assuming that:
+        # - logs are complete
+        # - one guard per night
+        sleep_schedule = defaultdict(list) # sleep schedule between 00.00 and 00.59
+        for log in logs:
+            if log['action'] == self.FALLS_ASLEEP:
+                fell_asleep_minute = log['date'].minute 
+            elif log['action'] == self.WAKES_UP:
+                for minute in range(fell_asleep_minute, log['date'].minute):
+                    sleep_schedule[minute].append(guard_id)
+            else:
+                guard_id = log['action']
+
+        return sleep_schedule
+                
+    def part_two(self):
+        """ Get the ID and most probable minute a guard is asleep """
+        # get the times each guard is asleep
+        sleep_schedule = self.get_sleep_schedule(self.logs)
+        # get the guard ID that sleeps the most
+        guard_id = Counter(
+                reduce(list.__add__, sleep_schedule.values(), [])).most_common()[0][0]
+        # get the minute where the guard sleeps the most
+        minute = max(sleep_schedule, key=lambda x: Counter(sleep_schedule[x]).most_common()[0][1])
+        # get the guard Id that sleep the most
+        return minute * Counter(sleep_schedule[minute]).most_common()[0][0]
 
 
 def get_puzzle_classes():
