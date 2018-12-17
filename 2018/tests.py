@@ -96,6 +96,14 @@ class TestPuzzle4(TestPuzzle):
                 result_part_one=240, result_part_two=4455)
 
 
+class TestPuzzle5(TestPuzzle):
+    DAY = 5
+
+    def load_test_cases(self):
+        self.add_test_case('dabAcCaCBAcCcaDA',
+                result_part_one=10, result_part_two=4)
+
+
 
 def get_parser():
     """ Construct a parser """

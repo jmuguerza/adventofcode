@@ -222,7 +222,7 @@ class Puzzle4(Puzzle):
                 guard_id = log['action']
 
         return sleep_schedule
-                
+
     def part_two(self):
         """ Get the ID and most probable minute a guard is asleep """
         # get the times each guard is asleep
@@ -234,6 +234,52 @@ class Puzzle4(Puzzle):
         minute = max(sleep_schedule, key=lambda x: Counter(sleep_schedule[x]).most_common()[0][1])
         # get the guard Id that sleep the most
         return minute * Counter(sleep_schedule[minute]).most_common()[0][0]
+
+
+class Puzzle5(Puzzle):
+    DAY = 5
+
+    def parse_input(self):
+        with open_file_or_string(self.input) as f:
+            self.polymer = f.read().rstrip()
+
+    def part_one(self, polymer=None):
+        """ Get the lenght of the remaining polymer  """
+        if not polymer:
+            polymer = self.polymer
+        remaining_polymer = self.react_polymer(polymer)
+        return len(remaining_polymer)
+
+    def react_polymer(self, polymer):
+        """ Remove every pair of adjacent capitalized and non-capitalized letters """
+        a = []
+        b = list(polymer)
+
+        def match(a, b):
+            return a != b and a.lower() == b.lower()
+
+        try:
+            while True:
+                a.append(b.pop(0))
+                # check if the last letter of a and the first of b match
+                while len(a) and match(a[-1], b[0]):
+                    # remove reacting components
+                    a.pop()
+                    b.pop(0)
+        except IndexError:
+            # index error because b is empty
+            # the whole list has been iterated through
+            return a
+
+    def part_two(self):
+        """ Get part one, but removing each time a letter """
+        return min(
+                self.part_one(
+                    polymer=list(filter(lambda x: x != letter and x != letter.upper(), self.polymer)))
+                for letter in set(map(str.lower, self.polymer))
+        )
+
+
 
 
 def get_puzzle_classes():
